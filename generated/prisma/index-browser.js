@@ -134,7 +134,8 @@ exports.Prisma.AccountScalarFieldEnum = {
   userId: 'userId',
   accessToken: 'accessToken',
   emailAddress: 'emailAddress',
-  name: 'name'
+  name: 'name',
+  nextDeltaToken: 'nextDeltaToken'
 };
 
 exports.Prisma.SortOrder = {
