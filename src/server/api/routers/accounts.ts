@@ -82,30 +82,33 @@ export const accountRouter = createTRPCRouter({
         }
 
         return await ctx.db.thread.findMany({
-            where: filter,
+            where: {
+                accountId: account.id,
+                ...filter
+            },
             include: {
                 emails: {
                     orderBy: {
                         sentAt: 'asc'
+                    },
+                    select: {
+                        from: {
+                            select: {
+                                name: true,
+                                address: true,
+                            }
+                        },
+                        body: true,
+                        bodySnippet: true,
+                        emailLabel: true,
+                        subject: true,
+                        sysLabels: true,
+                        id: true,
+                        sentAt: true,
                     }
                 }
             },
-            select: {
-                from: true,
-                body: true,
-                emailLabels: true,
-                subject: true,
-                bodySnippet: true,
-                sysLabel: true,
-                id: true,
-                sentAt: true,
-                // done: true,
-                // inboxStatus: true,
-                // draftStatus: true,
-                // sentStatus: true,
-                // createdAt: true, 
-                // updatedAt: true,
-            }, take: 15,
+            take: 15,
             orderBy: {
                 lastMessageDate: 'desc'
             }

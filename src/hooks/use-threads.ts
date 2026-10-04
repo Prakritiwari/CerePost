@@ -1,7 +1,7 @@
 import { api } from "@/trpc/react"
 import { useLocalStorage } from "usehooks-ts"
 
-export const useThread = () => {
+export const useThreads = () => {
     const { data: accounts } = api.account.getAccounts.useQuery()
     const [accountId] = useLocalStorage('accountId', '')
     const [tab] = useLocalStorage('cerepost-tab', 'inbox')

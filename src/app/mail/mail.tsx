@@ -21,7 +21,7 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { AccountSwitcher } from "@/app/mail/components/account-switcher"
 // import { ThreadDisplay } from "./thread-display"
-// import { ThreadList } from "./thread-list"
+import ThreadList from "./components/thread-list"
 import { useLocalStorage } from "usehooks-ts"
 import SideBar from "./components/sidebar"
 // import SearchBar, { isSearchingAtom } from "./components/search-bar"
@@ -39,7 +39,7 @@ export function Mail({
     defaultCollapsed = false,
     navCollapsedSize = 4,
 }: MailProps) {
-    const [done, setDone] = useLocalStorage('normalhuman-done', false)
+    const [done, setDone] = useLocalStorage('cerepost-done', false)
     const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed)
 
 
@@ -122,10 +122,10 @@ export function Mail({
                         <Separator />
                         {/* <SearchBar /> */}
                         <TabsContent value="inbox" className="m-0">
-                            {/* <ThreadList /> */}
+                            <ThreadList />
                         </TabsContent>
                         <TabsContent value="done" className="m-0">
-                            {/* <ThreadList /> */}
+                            <ThreadList />
                         </TabsContent>
                     </Tabs>
                 </ResizablePanel>
@@ -138,4 +138,4 @@ export function Mail({
     )
 }
 
-export default Mail
+export default Mail
