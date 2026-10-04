@@ -1,6 +1,6 @@
 import { exchangeCodeForAccessToken, getAccountDetails } from "@/lib/aurinko";
 import { db } from "@/server/db";
-import { auth } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 import { waitUntil } from "@vercel/functions";
 import axios from "axios";
@@ -28,6 +28,28 @@ export const GET = async (req: NextRequest) => {
 
     const accountDetails = await getAccountDetails(token.accessToken);
     if (!accountDetails) return NextResponse.json({ message: "Failed to fetch account details" }, { status: 400 });
+
+    // Ensure user exists in our database before creating an account linked to it
+    const existingUser = await db.user.findUnique({
+        where: { id: userId }
+    });
+
+    if (!existingUser) {
+        const clerkUser = await currentUser();
+        const primaryEmail = clerkUser?.emailAddresses[0]?.emailAddress ?? accountDetails.email;
+
+        await db.user.upsert({
+            where: { id: userId },
+            update: {},
+            create: {
+                id: userId,
+                emailAddress: primaryEmail,
+                firstName: clerkUser?.firstName ?? accountDetails.name?.split(" ")[0] ?? null,
+                lastName: clerkUser?.lastName ?? accountDetails.name?.split(" ").slice(1).join(" ") ?? null,
+                imageUrl: clerkUser?.imageUrl ?? null,
+            }
+        });
+    }
 
     await db.account.upsert({
         where: {

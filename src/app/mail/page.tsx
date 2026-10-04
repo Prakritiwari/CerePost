@@ -1,8 +1,16 @@
+'use client'
 
-const MailDashboard = async () => {
+import dynamic from "next/dynamic"
+
+
+const Mail = dynamic(() => import("./mail"), {
+    ssr: false,
+})
+
+const MailDashboard = () => {
     return (
-        <div>
-            <h1>Mail Dashboard</h1>
+        <div className="w-full h-screen flex flex-row">
+            <Mail />
         </div>
     )
 }
