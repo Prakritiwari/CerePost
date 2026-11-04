@@ -20,12 +20,12 @@ import {
 } from "@/components/ui/tabs"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { AccountSwitcher } from "@/app/mail/components/account-switcher"
-// import { ThreadDisplay } from "./thread-display"
-import ThreadList from "./components/thread-list"
+import { ThreadDisplay } from "./components/thread-display";
+import { ThreadList } from "./components/thread-list"
 import { useLocalStorage } from "usehooks-ts"
 import SideBar from "./components/sidebar"
 // import SearchBar, { isSearchingAtom } from "./components/search-bar"
-// import { useAtom } from "jotai"
+import { useAtom } from "jotai"
 // import AskAI from "./ask-ai"
 
 interface MailProps {
@@ -131,7 +131,7 @@ export function Mail({
                 </ResizablePanel>
                 <ResizableHandle withHandle />
                 <ResizablePanel defaultSize={defaultLayout[2]} minSize={30}>
-                    {/* <ThreadDisplay /> */}
+                    <ThreadDisplay />
                 </ResizablePanel>
             </ResizablePanelGroup>
         </TooltipProvider>

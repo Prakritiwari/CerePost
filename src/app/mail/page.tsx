@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from "next/dynamic"
-
+import { ThemeToggle } from "@/components/theme-toggle"
 
 const Mail = dynamic(() => import("./mail"), {
     ssr: false,
@@ -9,9 +9,18 @@ const Mail = dynamic(() => import("./mail"), {
 
 const MailDashboard = () => {
     return (
-        <div className="w-full h-screen flex flex-row">
-            <Mail />
-        </div>
+        <>
+            <div className="absolute bottom-4 left-4 z-50">
+                <ThemeToggle />
+            </div>
+            <div className="w-full h-screen flex flex-row">
+                <Mail
+                    defaultLayout={[20, 32, 48]}
+                    defaultCollapsed={false}
+                    navCollapsedSize={4}
+                />
+            </div>
+        </>
     )
 }
 
