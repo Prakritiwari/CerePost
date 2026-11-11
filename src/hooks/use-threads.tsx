@@ -6,7 +6,7 @@ import { useLocalStorage } from 'usehooks-ts'
 export const useThreads = () => {
     const { data: accounts } = api.mail.getAccounts.useQuery()
     const [accountId] = useLocalStorage('accountId', '')
-    const [tab] = useLocalStorage('normalhuman-tab', 'inbox')
+    const [tab] = useLocalStorage('cerepost-tab', 'inbox')
     const [done] = useLocalStorage('normalhuman-done', false)
     const queryKey = getQueryKey(api.mail.getThreads, { accountId, tab, done }, 'query')
     const { data: threads, isFetching, refetch } = api.mail.getThreads.useQuery({

@@ -1,33 +1,27 @@
 import React, { type ComponentProps } from "react"
 import DOMPurify from 'dompurify';
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { formatDistanceToNow } from "date-fns"
+import { BellOff, Star } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
 import useThreads from "@/hooks/use-threads"
-import { api, type RouterOutputs } from "@/trpc/react"
 import useVim from "./kbar/use-vim"
 import { useAutoAnimate } from "@formkit/auto-animate/react"
-import { useLocalStorage } from "usehooks-ts"
 import { useThread } from "./use-thread"
-// import { isSearchingAtom } from "./search-bar"
 
 import { format } from "date-fns";
 
 export function ThreadList() {
-    const { threads, isFetching } = useThreads();
+    const { threads } = useThreads();
     const [threadId, setThreadId] = useThread();
     const [parent] = useAutoAnimate(/* optional config */);
-    // const { selectedThreadIds, visualMode } = useVim();
+    useVim();
 
     const groupedThreads = threads?.reduce((acc, thread) => {
         const date = format(thread.lastMessageDate ?? new Date(), "yyyy-MM-dd");
-        if (!acc[date]) {
-            acc[date] = [];
-        }
+        acc[date] ??= [];
         acc[date].push(thread);
         return acc;
     }, {} as Record<string, typeof threads>);
@@ -45,9 +39,8 @@ export function ThreadList() {
                                 id={`thread-${item.id}`}
                                 key={item.id}
                                 className={cn(
-                                    "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all relative",
-
-
+                                    "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all relative hover:bg-muted/40",
+                                    item.isMuted && "opacity-70",
                                 )}
                                 onClick={() => {
                                     setThreadId(item.id);
@@ -69,6 +62,12 @@ export function ThreadList() {
                                             <div className="font-semibold">
                                                 {item.emails.at(-1)?.from?.name}
                                             </div>
+                                            {item.isStarred && (
+                                                <Star className="size-3 fill-amber-400 text-amber-400" />
+                                            )}
+                                            {item.isMuted && (
+                                                <BellOff className="size-3 text-muted-foreground" />
+                                            )}
                                         </div>
                                         <div
                                             className={cn(
@@ -94,12 +93,25 @@ export function ThreadList() {
                                     }}
                                 ></div>
                                 {item.emails[0]?.sysLabels.length ? (
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex flex-wrap items-center gap-2">
                                         {item.emails.at(0)?.sysLabels.map((label) => (
                                             <Badge
                                                 key={label}
                                                 variant={getBadgeVariantFromLabel(label)}
                                             >
+                                                {label}
+                                            </Badge>
+                                        ))}
+                                        {(item.labels ?? []).map((label) => (
+                                            <Badge key={label} variant="outline">
+                                                {label}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                ) : (item.labels?.length ?? 0) > 0 ? (
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        {item.labels.map((label) => (
+                                            <Badge key={label} variant="outline">
                                                 {label}
                                             </Badge>
                                         ))}

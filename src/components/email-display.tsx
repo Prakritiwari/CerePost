@@ -1,9 +1,8 @@
 'use client'
 import Avatar from 'react-avatar';
 import { Letter } from 'react-letter';
-import { api, type RouterOutputs } from '@/trpc/react'
+import { type RouterOutputs } from '@/trpc/react'
 import React from 'react'
-import { useLocalStorage } from 'usehooks-ts'
 import { useThreads } from '@/hooks/use-threads';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
@@ -29,8 +28,8 @@ const EmailDisplay = ({ email }: Props) => {
     const isMe = account?.emailAddress === email.from.address
 
     return (
-        <div className={cn('border rounded-md p-4 cursor-pointer transition-all  hover:translate-x-2', {
-            'border-l-gray-900 border-l-4': isMe
+        <div className={cn('border border-border rounded-md p-4 cursor-pointer transition-all hover:translate-x-2', {
+            'border-l-zinc-900 dark:border-l-zinc-100 border-l-4': isMe
         })} ref={letterRef}>
             <div className="flex items-center justify-between gap-2">
                 <div className='flex items-center gap-2'>
@@ -46,7 +45,7 @@ const EmailDisplay = ({ email }: Props) => {
                 </p>
             </div>
             <div className="h-4"></div>
-            <Letter className='bg-white rounded-md text-black' html={email?.body ?? ""} />
+            <Letter className='email-body rounded-md' html={email?.body ?? ""} />
         </div>
     )
 }

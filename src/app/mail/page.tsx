@@ -2,8 +2,11 @@
 
 import dynamic from "next/dynamic"
 import { ThemeToggle } from "@/components/theme-toggle"
+import type { ComponentProps } from "react"
+import type { Mail as MailType } from "./mail"
 
-const Mail = dynamic(() => import("./mail"), {
+const Mail = dynamic<ComponentProps<typeof MailType>>(() =>
+    import("./mail").then((mod) => mod.Mail), {
     ssr: false,
 })
 

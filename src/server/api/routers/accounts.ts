@@ -2,6 +2,8 @@ import z from "zod";
 import { createTRPCRouter, privateProcedure } from "../trpc";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/server/db";
+import { OramaManager } from "@/lib/orama";
+import { consolidateAccounts, getUniqueAccounts, resolveCanonicalAccount } from "@/server/account-utils";
 
 
 export const authoriseAccountAccess = async (accountId: string, userId: string) => {
@@ -21,19 +23,18 @@ export const authoriseAccountAccess = async (accountId: string, userId: string) 
     if (!account) {
         throw new Error("Account not found");
     }
-    return account;
+
+    return (await resolveCanonicalAccount(userId, account.emailAddress)) ?? account
 }
 
 export const accountRouter = createTRPCRouter({
     getAccounts: privateProcedure.query(({ ctx }) => {
-        return ctx.db.account.findMany({
-            where: {
-                userId: ctx.auth.userId
-            },
-            select: {
-                id: true, emailAddress: true, name: true
-            }
-        })
+        return getUniqueAccounts(ctx.auth.userId);
+    }),
+
+    consolidateAccounts: privateProcedure.mutation(async ({ ctx }) => {
+        await consolidateAccounts(ctx.auth.userId);
+        return { success: true };
     }),
 
     getNumThreads: privateProcedure.input(z.object({
@@ -50,6 +51,8 @@ export const accountRouter = createTRPCRouter({
             filter.draftStatus = true
         } else if (input.tab === 'sent') {
             filter.sentStatus = true
+        } else if (input.tab === 'starred') {
+            filter.isStarred = true
         }
 
         return await ctx.db.thread.count({
@@ -75,6 +78,8 @@ export const accountRouter = createTRPCRouter({
             filter.draftStatus = true
         } else if (input.tab === 'sent') {
             filter.sentStatus = true
+        } else if (input.tab === 'starred') {
+            filter.isStarred = true
         }
 
         filter.done = {
@@ -113,7 +118,31 @@ export const accountRouter = createTRPCRouter({
                 lastMessageDate: 'desc'
             }
         })
+    }),
+    getSuggestions: privateProcedure.input(z.object({
+        accountId: z.string()
+    })).query(async ({ ctx, input }) => {
+        const account = await authoriseAccountAccess(input.accountId, ctx.auth.userId)
+        return await ctx.db.emailAddress.findMany({
+            where: {
+                accountId: account.id
+            },
+            select: {
+                address: true,
+                name: true
+            }
+        })
+    }),
+    searchEmails: privateProcedure.input(z.object({
+        accountId: z.string(),
+        query: z.string()
+    })).mutation(async ({ ctx, input }) => {
+        const account = authoriseAccountAccess(input.accountId, ctx.auth.userId)
+        const orama = new OramaManager((await account).id)
+        await orama.initialize()
+        const results = await orama.search({ term: input.query })
+        return results
+
     })
+
 })
-
-

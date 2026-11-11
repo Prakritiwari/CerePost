@@ -8,9 +8,6 @@ import {
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable"
-
-import * as ResizablePrimitive from "react-resizable-panels";
-
 import { Separator } from "@/components/ui/separator"
 import {
     Tabs,
@@ -20,31 +17,35 @@ import {
 } from "@/components/ui/tabs"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { AccountSwitcher } from "@/app/mail/components/account-switcher"
-import { ThreadDisplay } from "./components/thread-display";
+import { ThreadDisplay } from "./components/thread-display"
 import { ThreadList } from "./components/thread-list"
 import { useLocalStorage } from "usehooks-ts"
 import SideBar from "./components/sidebar"
-// import SearchBar, { isSearchingAtom } from "./components/search-bar"
+import SearchBar, { isSearchingAtom } from "./components/search-bar"
+import SearchDisplay from "./components/search-display"
 import { useAtom } from "jotai"
-// import AskAI from "./ask-ai"
+import AskAI from "./components/ask-ai"
+import ComposeButton from "./components/compose-button"
 
 interface MailProps {
-    defaultLayout?: number[] | undefined
+    defaultLayout: number[] | undefined
     defaultCollapsed?: boolean
-    navCollapsedSize?: number
+    navCollapsedSize: number
 }
 
 export function Mail({
     defaultLayout = [20, 32, 48],
     defaultCollapsed = false,
-    navCollapsedSize = 4,
+    navCollapsedSize,
 }: MailProps) {
-    const [done, setDone] = useLocalStorage('cerepost-done', false)
+    const [done, setDone] = useLocalStorage('normalhuman-done', false)
+    const [tab] = useLocalStorage('cerepost-tab', 'inbox')
     const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed)
+    const [isSearching] = useAtom(isSearchingAtom)
 
 
     return (
-        <TooltipProvider delay={50}>
+        <TooltipProvider delay={0}>
             <ResizablePanelGroup
                 direction="horizontal"
                 onLayout={(sizes: number[]) => {
@@ -89,7 +90,10 @@ export function Mail({
                         <Separator />
                         <SideBar isCollapsed={isCollapsed} />
                         <div className="flex-1"></div>
-                        {/* <AskAI isCollapsed={isCollapsed} /> */}
+                        <div className={cn("p-2", !isCollapsed && "p-4")}>
+                            <ComposeButton isCollapsed={isCollapsed} />
+                        </div>
+                        <AskAI isCollapsed={isCollapsed} />
                     </div>
 
                 </ResizablePanel>
@@ -103,7 +107,7 @@ export function Mail({
                         }
                     }}>
                         <div className="flex items-center px-4 py-2">
-                            <h1 className="text-xl font-bold">Inbox</h1>
+                            <h1 className="text-xl font-bold capitalize">{tab}</h1>
                             <TabsList className="ml-auto">
                                 <TabsTrigger
                                     value="inbox"
@@ -120,13 +124,19 @@ export function Mail({
                             </TabsList>
                         </div>
                         <Separator />
-                        {/* <SearchBar /> */}
-                        <TabsContent value="inbox" className="m-0">
-                            <ThreadList />
-                        </TabsContent>
-                        <TabsContent value="done" className="m-0">
-                            <ThreadList />
-                        </TabsContent>
+                        <SearchBar />
+                        {isSearching ? (
+                            <SearchDisplay />
+                        ) : (
+                            <>
+                                <TabsContent value="inbox" className="m-0">
+                                    <ThreadList />
+                                </TabsContent>
+                                <TabsContent value="done" className="m-0">
+                                    <ThreadList />
+                                </TabsContent>
+                            </>
+                        )}
                     </Tabs>
                 </ResizablePanel>
                 <ResizableHandle withHandle />
@@ -137,5 +147,3 @@ export function Mail({
         </TooltipProvider>
     )
 }
-
-export default Mail

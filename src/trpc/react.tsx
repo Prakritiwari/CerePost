@@ -3,11 +3,11 @@
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import { httpBatchStreamLink, loggerLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
-import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
+import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 import { useState } from "react";
 import SuperJSON from "superjson";
 
-import { type AppRouter } from "@/server/api/root";
+import type { AppRouter } from "@/server/api/root";
 import { createQueryClient } from "./query-client";
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
@@ -45,9 +45,15 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
     api.createClient({
       links: [
         loggerLink({
-          enabled: (op) =>
-            process.env.NODE_ENV === "development" ||
-            (op.direction === "down" && op.result instanceof Error),
+          enabled: (op) => {
+            if (op.direction !== "down" || !(op.result instanceof Error)) {
+              return false;
+            }
+            // Billing/auth failures are surfaced with a toast in the UI.
+            return !/Aurinko requires an active billing plan|Could not refresh this mailbox/i.test(
+              op.result.message,
+            );
+          },
         }),
         httpBatchStreamLink({
           transformer: SuperJSON,

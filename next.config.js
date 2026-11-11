@@ -9,9 +9,18 @@ const config = {
     typescript: {
         ignoreBuildErrors: true,
     },
-    eslint: {
-        ignoreDuringBuilds: true,
-    }
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'secure.gravatar.com',
+            },
+            {
+                protocol: 'https',
+                hostname: '**.googleusercontent.com',
+            },
+        ],
+    },
 };
 
 export default config;

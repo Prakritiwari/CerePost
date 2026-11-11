@@ -13,10 +13,11 @@ export async function generateEmail(context: string, prompt: string) {
     const stream = createStreamableValue('');
 
     (async () => {
-        const { textStream } = await streamText({
-            model: google('gemini-2.5-flash'),
-            prompt: `
-            You are an AI email assistant embedded in an email client app. Your purpose is to help the user compose emails by providing suggestions and relevant information based on the context of their previous emails.
+        try {
+            const { textStream } = await streamText({
+                model: google('gemini-3.5-flash'),
+                prompt: `
+            You are an AI email assistant embedded in an email client app. Your purpose is to help the user compose emails by providing thoughtful, natural, and accurate responses based on the context of their previous emails.
 
             THE TIME NOW IS ${new Date().toLocaleString()}
 
@@ -24,27 +25,28 @@ export async function generateEmail(context: string, prompt: string) {
             ${context}
             END OF CONTEXT BLOCK
 
-            USER PROMPT:
+            USER INSTRUCTIONS / INTENT:
             ${prompt}
 
-            When responding, please keep in mind:
-            - Be helpful, clever, and articulate.
-            - Rely on the provided email context to inform your response.
-            - If the context does not contain enough information to fully address the prompt, politely give a draft response.
-            - Avoid apologizing for previous responses. Instead, indicate that you have updated your knowledge based on new information.
-            - Do not invent or speculate about anything that is not directly supported by the email context.
-            - Keep your response focused and relevant to the user's prompt.
-            - Don't add fluff like 'Heres your email' or 'Here's your email' or anything like that.
-            - Directly output the email, no need to say 'Here is your email'.
-            - No need to output subject.
+            When responding:
+            - Write directly in natural, human email prose.
+            - Greet the recipient by their first name if known from the previous email.
+            - Directly address any questions, requests, or information from the latest email in the context.
+            - Sign off naturally with the sender's name provided in context.
+            - Never include meta commentary like "Here is your email draft:" or subject lines.
+            - Never wrap the output in markdown code blocks like \`\`\`email. Output only the message body.
             `,
-        });
+            });
 
-        for await (const delta of textStream) {
-            stream.update(delta);
+            for await (const delta of textStream) {
+                stream.update(delta);
+            }
+
+            stream.done();
+        } catch (error) {
+            console.error("Error in generateEmail:", error);
+            stream.error(error);
         }
-
-        stream.done();
     })();
 
     return { output: stream.value };
@@ -56,9 +58,10 @@ export async function generate(input: string) {
     console.log("input", input);
 
     (async () => {
-        const { textStream } = await streamText({
-            model: google('gemini-2.5-flash'),
-            prompt: `
+        try {
+            const { textStream } = await streamText({
+                model: google('gemini-3.5-flash'),
+                prompt: `
             ALWAYS RESPOND IN PLAIN TEXT, no html or markdown.
 
             You are a helpful AI embedded in an email client app that is used to autocomplete sentences, similar to Google Gmail autocomplete.
@@ -82,13 +85,17 @@ export async function generate(input: string) {
 
             Your output is directly concatenated to the input, so do not add any new lines or formatting, just plain text.
             `,
-        });
+            });
 
-        for await (const delta of textStream) {
-            stream.update(delta);
+            for await (const delta of textStream) {
+                stream.update(delta);
+            }
+
+            stream.done();
+        } catch (error) {
+            console.error("Error in generate autocomplete:", error);
+            stream.error(error);
         }
-
-        stream.done();
     })();
 
     return { output: stream.value };

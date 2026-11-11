@@ -3,18 +3,11 @@ import React from 'react'
 
 
 import {
-    AlertCircle,
-    Archive,
-    ArchiveX,
     File,
     Inbox,
-    MessagesSquare,
     Send,
-    ShoppingCart,
-    Trash2,
-    Users2,
+    Star,
 } from "lucide-react"
-import { usePathname } from 'next/navigation'
 import { useLocalStorage } from 'usehooks-ts'
 import { api } from '@/trpc/react'
 import { Nav } from './nav'
@@ -41,6 +34,11 @@ const SideBar = ({ isCollapsed }: Props) => {
         tab: "sent"
     }, { enabled: !!accountId && !!tab, refetchInterval })
 
+    const { data: starredThreads } = api.mail.getNumThreads.useQuery({
+        accountId,
+        tab: "starred"
+    }, { enabled: !!accountId && !!tab, refetchInterval })
+
     return (
         <>
             <Nav
@@ -48,19 +46,25 @@ const SideBar = ({ isCollapsed }: Props) => {
                 links={[
                     {
                         title: "Inbox",
-                        label: inboxThreads?.toString() || "0",
+                        label: inboxThreads?.toString() ?? "0",
                         icon: Inbox,
                         variant: tab === "inbox" ? "default" : "ghost",
                     },
                     {
+                        title: "Starred",
+                        label: starredThreads?.toString() ?? "0",
+                        icon: Star,
+                        variant: tab === "starred" ? "default" : "ghost",
+                    },
+                    {
                         title: "Drafts",
-                        label: draftsThreads?.toString() || "0",
+                        label: draftsThreads?.toString() ?? "0",
                         icon: File,
                         variant: tab === "drafts" ? "default" : "ghost",
                     },
                     {
                         title: "Sent",
-                        label: sentThreads?.toString() || "0",
+                        label: sentThreads?.toString() ?? "0",
                         icon: Send,
                         variant: tab === "sent" ? "default" : "ghost",
                     },

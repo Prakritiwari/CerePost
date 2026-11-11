@@ -1,58 +1,91 @@
+import { db } from '@/server/db';
+import type { SyncUpdatedResponse, EmailMessage, EmailAddress, EmailAttachment, EmailHeader } from './types';
+import pLimit from 'p-limit';
+import { Prisma } from '@prisma/client';
+import { getOramaManager } from './orama';
+import { getEmbeddings } from './embeddings';
+import { turndown } from './turndown';
 
-import { db } from "@/server/db";
-import type { EmailAddress, EmailAttachment, EmailMessage } from "./types";
-import pLimit from 'p-limit'
-import { Prisma } from "@prisma/client";
+async function syncEmailsToDatabase(emails: EmailMessage[], accountId: string) {
+    console.log(`Syncing ${emails.length} emails to database`);
+    if (emails.length === 0) return;
 
+    const limit = pLimit(10); // Process up to 10 emails concurrently
 
-export async function syncEmailsToDatabase(emails: EmailMessage[], accountId: string) {
-    console.log('attempting to sync emails to database', emails.length)
-    const limit = pLimit(5)
+    const oramaClient = getOramaManager(accountId)
+    await oramaClient.initialize()
 
     try {
-        //Promise.all(emails.map((email, index) => upsertEmail(email, accountId, index)))
-        for (const email of emails) {
-            await upsertEmail(email, accountId, 0);
+
+        async function syncToOrama() {
+            await Promise.all(emails.map(email => {
+                return limit(async () => {
+                    const body = turndown.turndown(email.body ?? email.bodySnippet ?? '')
+                    const payload = `From: ${email.from.name} <${email.from.address}>\nTo: ${email.to.map(t => `${t.name} <${t.address}>`).join(', ')}\nSubject: ${email.subject}\nBody: ${body}\n SentAt: ${new Date(email.sentAt).toLocaleString()}`
+                    const bodyEmbedding = await getEmbeddings(payload);
+                    await oramaClient.insert({
+                        title: email.subject,
+                        body: body,
+                        rawBody: email.bodySnippet ?? '',
+                        from: `${email.from.name} <${email.from.address}>`,
+                        to: email.to.map(t => `${t.name} <${t.address}>`),
+                        sentAt: new Date(email.sentAt).toLocaleString(),
+                        embeddings: bodyEmbedding,
+                        threadId: email.threadId
+                    })
+                })
+            }))
         }
+
+        async function syncToDB() {
+            for (const [index, email] of emails.entries()) {
+                await upsertEmail(email, index, accountId);
+            }
+        }
+
+        await Promise.all([syncToOrama(), syncToDB()])
+
+        await oramaClient.saveIndex()
+    } catch (error) {
+        console.log('error', error)
     }
-    catch (error) {
-        console.log('error in syncEmailToDatabase', error)
-    }
+
 }
 
-async function upsertEmail(email: EmailMessage, accountId: string, index: number) {
-    console.log("upsertion email", index);
+async function upsertEmail(email: EmailMessage, index: number, accountId: string) {
+    console.log(`Upserting email ${index + 1}`, JSON.stringify(email, null, 2));
     try {
-        let emailLabelType: 'inbox' | 'sent' | 'draft' = 'inbox';
-        if (email.sysLabels.includes('inbox')) {
+
+        // determine email label type
+        let emailLabelType: 'inbox' | 'sent' | 'draft' = 'inbox'
+        if (email.sysLabels.includes('inbox') || email.sysLabels.includes('important')) {
             emailLabelType = 'inbox'
-        }
-        else if (email.sysLabels.includes('sent')) {
+        } else if (email.sysLabels.includes('sent')) {
             emailLabelType = 'sent'
-        }
-        else if (email.sysLabels.includes('draft')) {
+        } else if (email.sysLabels.includes('draft')) {
             emailLabelType = 'draft'
         }
 
+        // 1. Upsert EmailAddress records
         const addressesToUpsert = new Map()
         for (const address of [email.from, ...email.to, ...email.cc, ...email.bcc, ...email.replyTo]) {
-            addressesToUpsert.set(address.address, address)
-
+            addressesToUpsert.set(address.address, address);
         }
 
-        const upsertedAddress: (Awaited<ReturnType<typeof upsertEmailAddress>>)[] = []
+        const upsertedAddresses: (Awaited<ReturnType<typeof upsertEmailAddress>> | null)[] = [];
 
         for (const address of addressesToUpsert.values()) {
-            upsertedAddress.push(await upsertEmailAddress(address, accountId))
+            const upsertedAddress = await upsertEmailAddress(address, accountId);
+            upsertedAddresses.push(upsertedAddress);
         }
 
         const addressMap = new Map(
-            upsertedAddress.filter(Boolean).map(address => [address!.address, address])
-        )
+            upsertedAddresses.filter(Boolean).map(address => [address!.address, address])
+        );
 
         const fromAddress = addressMap.get(email.from.address);
         if (!fromAddress) {
-            console.log(`Failed to upsert from address from email ${email.bodySnippet}`);
+            console.log(`Failed to upsert from address for email ${email.bodySnippet}`);
             return;
         }
 
@@ -183,12 +216,19 @@ async function upsertEmail(email: EmailMessage, accountId: string, index: number
                 sentStatus: threadFolderType === 'sent',
             }
         });
-    }
-    catch (error) {
-        console.log('error in upsertingEmail', error)
+
+        // 4. Upsert Attachments
+        for (const attachment of email.attachments) {
+            await upsertAttachment(email.id, attachment);
+        }
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            console.log(`Prisma error for email ${email.id}: ${error.message}`);
+        } else {
+            console.log(`Unknown error for email ${email.id}: ${error}`);
+        }
     }
 }
-
 
 async function upsertEmailAddress(address: EmailAddress, accountId: string) {
     try {
@@ -211,7 +251,6 @@ async function upsertEmailAddress(address: EmailAddress, accountId: string) {
         return null;
     }
 }
-
 async function upsertAttachment(emailId: string, attachment: EmailAttachment) {
     try {
         await db.emailAttachment.upsert({
@@ -242,5 +281,4 @@ async function upsertAttachment(emailId: string, attachment: EmailAttachment) {
     }
 }
 
-
-
+export { syncEmailsToDatabase };

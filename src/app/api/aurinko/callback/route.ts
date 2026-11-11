@@ -51,27 +51,83 @@ export const GET = async (req: NextRequest) => {
         });
     }
 
-    await db.account.upsert({
+    const normalizedEmail = accountDetails.email.trim().toLowerCase();
+    const emailAccounts = await db.account.findMany({
         where: {
-            id: token.accountId.toString()
-        },
-        update: {
-            token: token.accessToken
-        },
-        create: {
-            id: token.accountId.toString(),
             userId,
-            emailAddress: accountDetails.email,
-            name: accountDetails.name,
-            token: token.accessToken,
-            provider: 'Google'
+            emailAddress: { equals: normalizedEmail, mode: 'insensitive' },
+        },
+        include: { _count: { select: { threads: true } } },
+        orderBy: { id: 'asc' },
+    });
+
+    const tokenAccountId = token.accountId.toString();
+    const tokenAccount = emailAccounts.find((a) => a.id === tokenAccountId);
+
+    // Re-use an existing row for the same mailbox instead of creating a new
+    // account on every re-link. Prefer the freshly authorized row, then the
+    // row that holds the most mail.
+    const canonical = tokenAccount ?? [...emailAccounts].sort(
+        (a, b) => b._count.threads - a._count.threads || a.id.localeCompare(b.id),
+    )[0];
+
+    let accountId: string;
+
+    if (canonical) {
+        let deltaToken = canonical.nextDeltaToken;
+
+        for (const duplicate of emailAccounts) {
+            if (duplicate.id === canonical.id) continue;
+
+            // Move any mail synced under the duplicate onto the canonical row.
+            await db.thread.updateMany({
+                where: { accountId: duplicate.id },
+                data: { accountId: canonical.id },
+            });
+
+            if (!deltaToken && duplicate.nextDeltaToken) {
+                deltaToken = duplicate.nextDeltaToken;
+            }
+
+            const addressCount = await db.emailAddress.count({
+                where: { accountId: duplicate.id },
+            });
+            if (addressCount === 0) {
+                await db.account
+                    .delete({ where: { id: duplicate.id } })
+                    .catch(() => undefined);
+            }
         }
-    })
+
+        await db.account.update({
+            where: { id: canonical.id },
+            data: {
+                token: token.accessToken,
+                emailAddress: accountDetails.email,
+                name: accountDetails.name,
+                provider: 'Google',
+                nextDeltaToken: deltaToken,
+            },
+        });
+        accountId = canonical.id;
+    } else {
+        const created = await db.account.create({
+            data: {
+                id: tokenAccountId,
+                userId,
+                emailAddress: accountDetails.email,
+                name: accountDetails.name,
+                token: token.accessToken,
+                provider: 'Google',
+            },
+        });
+        accountId = created.id;
+    }
 
     //trigger initial sync endpoint
     waitUntil(
         axios.post(`${process.env.NEXT_PUBLIC_URL}/api/initial-sync`, {
-            accountId: token.accountId.toString(),
+            accountId,
             userId,
         }).then(response => {
             console.log("Initial sync triggered", response.status);

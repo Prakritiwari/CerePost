@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Avatar from 'react-avatar';
 import Select from 'react-select';
+import { cn } from '@/lib/utils';
 
 type TagInputProps = {
     suggestions: string[];
@@ -21,8 +22,8 @@ const TagInput: React.FC<TagInputProps> = ({ suggestions, defaultValues = [], la
     }));
 
     return (
-        <div className="border rounded-md flex items-center">
-            <span className='ml-3 text-sm text-gray-500'>{label}</span>
+        <div className="border rounded-md flex items-center bg-background">
+            <span className='ml-3 text-sm text-muted-foreground'>{label}</span>
             <Select
                 value={value}
                 onChange={(values) => onChange(values as { label: string, value: string }[])}
@@ -40,14 +41,28 @@ const TagInput: React.FC<TagInputProps> = ({ suggestions, defaultValues = [], la
                 )}
                 classNames={{
                     control: () => {
-                        return '!border-none !outline-none !ring-0 !shadow-none focus:border-none focus:outline-none focus:ring-0 focus:shadow-none dark:bg-transparent'
+                        return '!border-none !outline-none !ring-0 !shadow-none focus:border-none focus:outline-none focus:ring-0 focus:shadow-none dark:!bg-transparent'
                     },
+                    menu: () => '!bg-popover dark:!bg-zinc-800 !border !border-border !shadow-lg',
+                    menuList: () => '!bg-popover dark:!bg-zinc-800',
+                    option: (state) => cn(
+                        '!cursor-pointer',
+                        state.isFocused && '!bg-accent',
+                        state.isSelected && '!bg-accent',
+                    ),
+                    singleValue: () => 'dark:!text-zinc-100',
+                    input: () => 'dark:!text-zinc-100',
+                    placeholder: () => 'dark:!text-zinc-500',
                     multiValue: () => {
-                        return 'dark:!bg-gray-700'
+                        return 'dark:!bg-zinc-700'
                     },
                     multiValueLabel: () => {
-                        return 'dark:text-white dark:bg-gray-700 rounded-md'
-                    }
+                        return 'dark:text-white dark:bg-zinc-700 rounded-md'
+                    },
+                    multiValueRemove: () => 'dark:!text-zinc-300 dark:hover:!bg-zinc-600',
+                    dropdownIndicator: () => 'dark:!text-zinc-400',
+                    clearIndicator: () => 'dark:!text-zinc-400',
+                    indicatorSeparator: () => 'dark:!bg-zinc-600',
                 }}
                 classNamePrefix="select"
             />

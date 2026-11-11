@@ -2,6 +2,7 @@ import Account from "@/lib/account";
 import { syncEmailsToDatabase } from "@/lib/sync-to-db";
 import { db } from "@/server/db";
 import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
 
 export const POST = async (req: NextRequest) => {
     const { accountId, userId } = await req.json();
@@ -19,7 +20,21 @@ export const POST = async (req: NextRequest) => {
     if (!dbAccount) return NextResponse.json({ message: "Account not found" }, { status: 404 })
 
     const account = new Account(dbAccount.token)
-    const response = await account.performInitialSync();
+    let response
+    try {
+        response = await account.performInitialSync()
+    } catch (error) {
+        console.error("Initial sync failed:", error)
+        return NextResponse.json(
+            {
+                message: "Initial sync failed",
+                code: axios.isAxiosError(error)
+                    ? (error.response?.data as { code?: string } | undefined)?.code
+                    : undefined,
+            },
+            { status: 500 },
+        )
+    };
 
     if (!response) {
         return NextResponse.json({ message: "Initial sync failed" }, { status: 500 });

@@ -17,9 +17,6 @@ model User {
     lastName     String?
     imageUrl     String?
 
-    stripeSubscriptionId String?             @unique
-    stripeSubscription   StripeSubscription? @relation(fields: [stripeSubscriptionId], references: [id])
-
     role Role @default(user)
 
     accounts Account[]
@@ -43,22 +40,6 @@ model ChatbotInteraction {
 
     @@unique([day, userId])
     @@index([day, userId])
-}
-
-model StripeSubscription {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-
-    userId String? @unique
-    user   User?
-
-    subscriptionId String? @unique
-    productId      String?
-    priceId        String?
-    customerId     String?
-
-    currentPeriodEnd DateTime
-    updatedAt        DateTime @updatedAt
 }
 
 model Account {
@@ -95,6 +76,10 @@ model Thread {
     draftStatus Boolean @default(false)
     sentStatus  Boolean @default(false)
 
+    isStarred Boolean @default(false)
+    isMuted   Boolean @default(false)
+    labels    String[] @default([])
+
     emails Email[]
 
     @@index([accountId])
@@ -102,6 +87,8 @@ model Thread {
     @@index([inboxStatus])
     @@index([draftStatus])
     @@index([sentStatus])
+    @@index([isStarred])
+    @@index([isMuted])
     @@index([lastMessageDate])
 }
 
