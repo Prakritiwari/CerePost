@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LandingBackground } from "@/components/landing-background";
 import { AuthGate } from "@/components/auth-gate";
+import { LogoMark } from "@/components/logo";
 import {
     Sparkles,
     Zap,
@@ -29,15 +30,13 @@ export default function Home() {
                 {/* Header / Navbar */}
                 <header className="sticky top-0 z-50 w-full border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md">
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="size-9 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-lg shadow-sm">
-                                C
-                            </div>
+                        <Link href="/" className="flex items-center gap-3" aria-label="CerePost home">
+                            <LogoMark className="size-10" />
                             <div className="flex flex-col">
                                 <span className="font-bold text-base tracking-tight">CerePost</span>
                                 <span className="text-[10px] text-zinc-500 font-mono -mt-1 tracking-wider uppercase">AI Email Client</span>
                             </div>
-                        </div>
+                        </Link>
 
                         <div className="flex items-center gap-3">
                             <ThemeToggle />
@@ -356,6 +355,7 @@ export default function Home() {
                 <footer className="mt-auto border-t border-zinc-200/80 dark:border-zinc-800/80 py-8 px-4 sm:px-6 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-md">
                     <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
                         <div className="flex items-center gap-2">
+                            <LogoMark className="size-5" />
                             <span className="font-bold text-zinc-900 dark:text-zinc-100">CerePost</span>
                             <span>&copy; {new Date().getFullYear()} All rights reserved.</span>
                         </div>

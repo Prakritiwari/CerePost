@@ -1,11 +1,12 @@
 'use client'
 import { motion, AnimatePresence } from 'framer-motion';
 import React, { useState, useEffect } from 'react'
-import { Send, Sparkles, Loader2, RotateCcw } from 'lucide-react';
+import { Send, Loader2, RotateCcw } from 'lucide-react';
 import { useLocalStorage } from 'usehooks-ts';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
+import { LogoMark } from '@/components/logo';
 import { toast } from 'sonner';
 
 interface Message {
@@ -176,9 +177,7 @@ const AskAI = ({ isCollapsed }: { isCollapsed: boolean }) => {
             <div className="flex flex-col border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-900 p-3 shadow-sm">
                 <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
                     <div className="flex items-center gap-2">
-                        <div className="p-1 rounded-md bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
-                            <Sparkles className="size-3.5" />
-                        </div>
+                        <LogoMark className="size-5" />
                         <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
                             CerePost AI
                         </span>

@@ -49,6 +49,7 @@ import { api } from "@/trpc/react"
 import { addDays, addHours, format, nextSaturday } from "date-fns"
 import { cn } from "@/lib/utils"
 import EmailDisplay from "@/components/email-display"
+import { LogoMark } from "@/components/logo"
 import { useThread } from "./use-thread"
 import useThreads from "@/hooks/use-threads"
 import { useLocalStorage } from "usehooks-ts"
@@ -512,8 +513,24 @@ export function ThreadDisplay({
                     </div>
                 ) : (
                     <>
-                        <div className="p-8 text-center text-muted-foreground">
-                            No message selected
+                        <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+                            <LogoMark className="size-16 opacity-80" glow />
+                            <div>
+                                <p className="text-sm font-semibold text-foreground">
+                                    No message selected
+                                </p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    Pick a thread from the list, or press{" "}
+                                    <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[10px]">
+                                        Ctrl
+                                    </kbd>{" "}
+                                    +{" "}
+                                    <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[10px]">
+                                        K
+                                    </kbd>{" "}
+                                    to jump anywhere.
+                                </p>
+                            </div>
                         </div>
                     </>
                 )}
