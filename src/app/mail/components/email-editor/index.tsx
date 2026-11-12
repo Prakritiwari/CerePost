@@ -111,7 +111,7 @@ const EmailEditor = ({ toValues, ccValues, subject, setSubject, to, handleSend, 
         editorProps: {
             attributes: {
                 placeholder: "Write your email here...",
-                class: "focus:outline-none min-h-[120px] max-h-[250px] overflow-y-auto px-4 py-2 w-full",
+                class: "focus:outline-none min-h-[90px] max-h-[250px] overflow-y-auto px-4 py-2 w-full sm:min-h-[120px]",
             }
         },
         onUpdate: ({ editor }) => {

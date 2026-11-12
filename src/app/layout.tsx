@@ -20,7 +20,12 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      signInForceRedirectUrl="/mail"
+      signUpForceRedirectUrl="/mail"
+      signInFallbackRedirectUrl="/mail"
+      signUpFallbackRedirectUrl="/mail"
+    >
       <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
         <body>
           <ThemeProvider attribute='class' defaultTheme='dark' enableSystem={false} disableTransitionOnChange>

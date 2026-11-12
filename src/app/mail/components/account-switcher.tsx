@@ -90,17 +90,55 @@ export function AccountSwitcher({ isCollapsed }: AccountSwitcherProps) {
   // Keep the chosen account pointed at a real (deduplicated) row.
   React.useEffect(() => {
     if (!accounts) return
-    if (accounts.length === 0) {
-      toast("Link an account to continue", {
+
+    const params = new URLSearchParams(window.location.search)
+    const linkStatus = params.get("link")
+    const reason = params.get("reason")
+
+    if (linkStatus === "failed") {
+      const description =
+        reason === "application.notfound"
+          ? "Aurinko could not find the configured application. Verify AURINKO_CLIENT_ID and AURINKO_CLIENT_SECRET in production."
+          : reason === "configuration"
+            ? "Mailbox linking is not configured on the server. Check the Aurinko environment variables."
+            : reason === "access_denied"
+              ? "Google access was cancelled or denied."
+              : reason === "payment.required"
+                ? "Aurinko requires an active billing plan before mail can sync."
+                : reason === "token_exchange_failed"
+                  ? "Aurinko rejected the authorization code. Check the production client ID and secret."
+                  : "The mailbox could not be connected. Please try again."
+
+      toast.error("Could not connect your mailbox", {
+        description,
+        duration: 15_000,
         action: {
-          label: "Add account",
+          label: "Retry",
           onClick: () => {
+            sessionStorage.removeItem("cerepost:auto-link")
             window.location.href = "/api/aurinko/authorize?service=Google"
           },
         },
       })
+
+      window.history.replaceState({}, "", "/mail")
       return
     }
+
+    if (accounts.length === 0) {
+      if (sessionStorage.getItem("cerepost:auto-link") === "1") return
+      sessionStorage.setItem("cerepost:auto-link", "1")
+      window.location.href = "/api/aurinko/authorize?service=Google"
+      return
+    }
+
+    sessionStorage.removeItem("cerepost:auto-link")
+
+    if (params.get("linked") === "1") {
+      toast.success("Mailbox connected")
+      window.history.replaceState({}, "", "/mail")
+    }
+
     if (!accounts.some((account) => account.id === accountId)) {
       setAccountId(accounts[0]!.id)
     }
@@ -135,6 +173,11 @@ export function AccountSwitcher({ isCollapsed }: AccountSwitcherProps) {
     syncCooldownUntil.current = 0
     invalidateMail()
     syncEmails.mutate({ accountId })
+  }
+
+  const handleSignOut = () => {
+    sessionStorage.removeItem("cerepost:auto-link")
+    void signOut({ redirectUrl: "/" })
   }
 
   const handleAddAccount = () => {
@@ -201,7 +244,7 @@ export function AccountSwitcher({ isCollapsed }: AccountSwitcherProps) {
             Refresh inbox
           </div>
           <div
-            onClick={() => void signOut({ redirectUrl: "/" })}
+            onClick={() => void handleSignOut()}
             className="relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-8 pl-2 text-sm text-red-600 outline-none hover:bg-red-500/10 focus:bg-red-500/10 dark:text-red-400"
           >
             <LogOut className="mr-1 size-4" />
@@ -227,7 +270,7 @@ export function AccountSwitcher({ isCollapsed }: AccountSwitcherProps) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => void signOut({ redirectUrl: "/" })}
+            onClick={() => void handleSignOut()}
             title="Sign out"
             aria-label="Sign out"
           >

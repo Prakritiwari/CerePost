@@ -11,9 +11,9 @@ import {
 import { useLocalStorage } from 'usehooks-ts'
 import { api } from '@/trpc/react'
 import { Nav } from './nav'
-type Props = { isCollapsed: boolean }
+type Props = { isCollapsed: boolean; onNavigate?: () => void }
 
-const SideBar = ({ isCollapsed }: Props) => {
+const SideBar = ({ isCollapsed, onNavigate }: Props) => {
 
     const [tab] = useLocalStorage("cerepost-tab", "inbox")
     const [accountId] = useLocalStorage("accountId", "")
@@ -43,6 +43,7 @@ const SideBar = ({ isCollapsed }: Props) => {
         <>
             <Nav
                 isCollapsed={isCollapsed}
+                onNavigate={onNavigate}
                 links={[
                     {
                         title: "Inbox",

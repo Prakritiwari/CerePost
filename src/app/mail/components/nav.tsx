@@ -10,11 +10,11 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
-import Link from "next/link"
 import { useLocalStorage } from "usehooks-ts"
 
 interface NavProps {
     isCollapsed: boolean
+    onNavigate?: () => void
     links: {
         title: string
         label?: string
@@ -23,9 +23,9 @@ interface NavProps {
     }[]
 }
 
-export function Nav({ links, isCollapsed }: NavProps) {
+export function Nav({ links, isCollapsed, onNavigate }: NavProps) {
 
-    const [_, setTab] = useLocalStorage("cerepost-tab", "inbox")
+    const [, setTab] = useLocalStorage("cerepost-tab", "inbox")
 
     return (
         <div
@@ -38,7 +38,10 @@ export function Nav({ links, isCollapsed }: NavProps) {
                         <Tooltip key={index} >
                             <TooltipTrigger >
                                 <span
-                                    onClick={() => setTab(link.title.toLowerCase())}
+                                    onClick={() => {
+                                        setTab(link.title.toLowerCase())
+                                        onNavigate?.()
+                                    }}
                                     className={cn(
                                         buttonVariants({ variant: link.variant, size: "icon" }),
                                         "h-9 w-9 cursor-pointer",
@@ -62,7 +65,10 @@ export function Nav({ links, isCollapsed }: NavProps) {
                     ) : (
                         <span
                             key={index}
-                            onClick={() => setTab(link.title.toLowerCase())}
+                            onClick={() => {
+                                setTab(link.title.toLowerCase())
+                                onNavigate?.()
+                            }}
                             className={cn(
                                 buttonVariants({ variant: link.variant, size: "sm" }),
                                 link.variant === "default" &&

@@ -1,4 +1,5 @@
 import {
+    ArrowLeft,
     Bell,
     BellOff,
     CheckCircle2,
@@ -66,7 +67,13 @@ const escapeHtml = (value: string) =>
         return entities[character]!
     })
 
-export function ThreadDisplay() {
+export function ThreadDisplay({
+    mobile = false,
+    onBack,
+}: {
+    mobile?: boolean
+    onBack?: () => void
+} = {}) {
     const [threadId, setThreadId] = useThread()
     const { threads, account } = useThreads()
     const today = new Date()
@@ -260,8 +267,24 @@ export function ThreadDisplay() {
 
     return (
         <div className="flex flex-col h-full bg-background">
-            <div className="flex items-center p-2">
+            <div
+                className={cn(
+                    "flex items-center p-2",
+                    mobile && "[&_button]:size-10 [&_button>svg]:size-5",
+                )}
+            >
                 <div className="flex items-center gap-1">
+                    {mobile && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onBack}
+                            aria-label="Back to inbox"
+                            className="mr-0.5"
+                        >
+                            <ArrowLeft className="h-5 w-5" />
+                        </Button>
+                    )}
                     <Tooltip>
                         <TooltipTrigger render={<Button variant="ghost" size="icon" disabled={!thread} onClick={handleMarkDone} />}>
                             <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -276,20 +299,23 @@ export function ThreadDisplay() {
                         </TooltipTrigger>
                         <TooltipContent>{thread?.isStarred ? 'Remove star' : 'Star thread'}</TooltipContent>
                     </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger render={<Button variant="ghost" size="icon" disabled={!thread} onClick={toggleMute} />}>
-                            {thread?.isMuted ? (
-                                <BellOff className="w-4 h-4 text-muted-foreground" />
-                            ) : (
-                                <Bell className="w-4 h-4" />
-                            )}
-                            <span className="sr-only">Mute thread</span>
-                        </TooltipTrigger>
-                        <TooltipContent>{thread?.isMuted ? 'Unmute thread' : 'Mute thread'}</TooltipContent>
-                    </Tooltip>
+                    {!mobile && (
+                        <Tooltip>
+                            <TooltipTrigger render={<Button variant="ghost" size="icon" disabled={!thread} onClick={toggleMute} />}>
+                                {thread?.isMuted ? (
+                                    <BellOff className="w-4 h-4 text-muted-foreground" />
+                                ) : (
+                                    <Bell className="w-4 h-4" />
+                                )}
+                                <span className="sr-only">Mute thread</span>
+                            </TooltipTrigger>
+                            <TooltipContent>{thread?.isMuted ? 'Unmute thread' : 'Mute thread'}</TooltipContent>
+                        </Tooltip>
+                    )}
                     <Separator orientation="vertical" className="h-6 mx-1" />
-                    <Tooltip>
-                        <Popover>
+                    {!mobile && (
+                        <Tooltip>
+                            <Popover>
                             <PopoverTrigger render={
                                 <TooltipTrigger render={<Button variant="ghost" size="icon" disabled={!thread} />}>
                                     <Clock className="w-4 h-4" />
@@ -345,6 +371,7 @@ export function ThreadDisplay() {
                         </Popover>
                         <TooltipContent>Snooze</TooltipContent>
                     </Tooltip>
+                    )}
                 </div>
                 <div className="flex items-center gap-2 ml-auto">
                     <Tooltip>
@@ -354,20 +381,24 @@ export function ThreadDisplay() {
                         </TooltipTrigger>
                         <TooltipContent>Reply</TooltipContent>
                     </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger render={<Button variant="ghost" size="icon" disabled={!thread} onClick={() => handleReply('replyAll')} />}>
-                            <ReplyAll className="w-4 h-4" />
-                            <span className="sr-only">Reply all</span>
-                        </TooltipTrigger>
-                        <TooltipContent>Reply all</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger render={<Button variant="ghost" size="icon" disabled={!thread} onClick={handleForward} />}>
-                            <Forward className="w-4 h-4" />
-                            <span className="sr-only">Forward</span>
-                        </TooltipTrigger>
-                        <TooltipContent>Forward</TooltipContent>
-                    </Tooltip>
+                    {!mobile && (
+                        <>
+                            <Tooltip>
+                                <TooltipTrigger render={<Button variant="ghost" size="icon" disabled={!thread} onClick={() => handleReply('replyAll')} />}>
+                                    <ReplyAll className="w-4 h-4" />
+                                    <span className="sr-only">Reply all</span>
+                                </TooltipTrigger>
+                                <TooltipContent>Reply all</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger render={<Button variant="ghost" size="icon" disabled={!thread} onClick={handleForward} />}>
+                                    <Forward className="w-4 h-4" />
+                                    <span className="sr-only">Forward</span>
+                                </TooltipTrigger>
+                                <TooltipContent>Forward</TooltipContent>
+                            </Tooltip>
+                        </>
+                    )}
                 </div>
                 <Separator orientation="vertical" className="h-6 mx-2" />
                 <DropdownMenu>
@@ -376,6 +407,22 @@ export function ThreadDisplay() {
                         <span className="sr-only">More</span>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
+                        {mobile && (
+                            <>
+                                <DropdownMenuItem onClick={() => handleReply('replyAll')}>
+                                    <ReplyAll className="size-4" />
+                                    Reply all
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleForward}>
+                                    <Forward className="size-4" />
+                                    Forward
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleMarkDone}>
+                                    <CheckCircle2 className="size-4" />
+                                    Mark as done
+                                </DropdownMenuItem>
+                            </>
+                        )}
                         <DropdownMenuItem onClick={handleMarkUnread}>
                             <Mail className="size-4" />
                             Mark as unread
@@ -402,9 +449,9 @@ export function ThreadDisplay() {
             <Separator />
             <>
                 {thread ? (
-                    <div className="flex flex-col flex-1 overflow-scroll">
-                        <div className="flex items-start p-4">
-                            <div className="flex items-start gap-4 text-sm">
+                    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-start">
+                            <div className="flex min-w-0 items-start gap-3 text-sm sm:gap-4">
                                 <Avatar>
                                     <AvatarImage alt={'lol'} />
                                     <AvatarFallback>
@@ -413,9 +460,11 @@ export function ThreadDisplay() {
                                             .join("")}
                                     </AvatarFallback>
                                 </Avatar>
-                                <div className="grid gap-1">
-                                    <div className="flex items-center gap-2 font-semibold">
-                                        {thread.emails[0]?.from?.name}
+                                <div className="grid min-w-0 gap-1">
+                                    <div className="flex min-w-0 flex-wrap items-center gap-2 text-base font-semibold sm:text-sm">
+                                        <span className="truncate">
+                                            {thread.emails[0]?.from?.name}
+                                        </span>
                                         {thread.isMuted && (
                                             <Badge variant="outline" className="gap-1 text-[10px] font-normal text-muted-foreground">
                                                 <BellOff className="size-3" />
@@ -423,8 +472,10 @@ export function ThreadDisplay() {
                                             </Badge>
                                         )}
                                     </div>
-                                    <div className="text-xs line-clamp-1">{thread.emails[0]?.subject}</div>
-                                    <div className="text-xs line-clamp-1">
+                                    <div className="line-clamp-2 text-sm text-muted-foreground sm:text-xs sm:line-clamp-1">
+                                        {thread.emails[0]?.subject}
+                                    </div>
+                                    <div className="truncate text-xs">
                                         <span className="font-medium">Reply-To:</span> {thread.emails[0]?.from?.address}
                                     </div>
                                     {(thread.labels?.length ?? 0) > 0 && (
@@ -439,22 +490,20 @@ export function ThreadDisplay() {
                                 </div>
                             </div>
                             {thread.emails[0]?.sentAt && (
-                                <div className="ml-auto text-xs text-muted-foreground">
+                                <div className="text-xs text-muted-foreground sm:ml-auto sm:shrink-0">
                                     {format(new Date(thread.emails[0].sentAt), "PPpp")}
                                 </div>
                             )}
                         </div>
                         <Separator />
-                        <div className="max-h-[calc(100vh-500px)] overflow-scroll flex flex-col">
-                            <div className="p-6 flex flex-col gap-4">
+                        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                            <div className="flex flex-col gap-4 p-4 sm:p-6">
                                 {thread.emails.map(email => {
                                     return <EmailDisplay key={email.id} email={email} />
                                 })}
                             </div>
                         </div>
-                        <div className="flex-1"></div>
-                        <Separator className="mt-auto" />
-                        <div data-reply-box>
+                        <div data-reply-box className="shrink-0 border-t bg-background">
                             <ReplyBox
                                 replyDetails={replyDetails}
                                 replyType={replyType}

@@ -90,7 +90,7 @@ const SearchDisplay = () => {
     return (
         <div
             data-search-results
-            className="max-h-[calc(100vh-140px)] overflow-y-auto p-4"
+            className="h-full max-h-full overflow-y-auto p-4 pb-24 sm:h-auto sm:max-h-[calc(100vh-140px)] sm:pb-4"
         >
             <div className="mb-4 flex items-start justify-between gap-3">
                 <div>

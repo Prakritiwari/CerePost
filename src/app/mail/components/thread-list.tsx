@@ -13,7 +13,7 @@ import { useThread } from "./use-thread"
 
 import { format } from "date-fns";
 
-export function ThreadList() {
+export function ThreadList({ mobile = false }: { mobile?: boolean }) {
     const { threads } = useThreads();
     const [threadId, setThreadId] = useThread();
     const [parent] = useAutoAnimate(/* optional config */);
@@ -27,11 +27,24 @@ export function ThreadList() {
     }, {} as Record<string, typeof threads>);
 
     return (
-        <div className="max-w-full overflow-y-scroll max-h-[calc(100vh-120px)]">
-            <div className="flex flex-col gap-2 p-4 pt-0" ref={parent}>
+        <div
+            className={cn(
+                "max-w-full",
+                mobile
+                    ? "h-full overflow-y-auto overscroll-contain"
+                    : "max-h-[calc(100vh-120px)] overflow-y-scroll",
+            )}
+        >
+            <div
+                className={cn(
+                    "flex flex-col",
+                    mobile ? "gap-3 px-4 pt-4 pb-24" : "gap-2 p-4 pt-0",
+                )}
+                ref={parent}
+            >
                 {Object.entries(groupedThreads ?? {}).map(([date, threads]) => (
                     <React.Fragment key={date}>
-                        <div className="text-xs font-medium text-muted-foreground mt-4 first:mt-0">
+                        <div className="mt-2 text-xs font-medium text-muted-foreground first:mt-0 sm:mt-4">
                             {format(new Date(date), "MMMM d, yyyy")}
                         </div>
                         {threads.map((item) => (
@@ -39,7 +52,7 @@ export function ThreadList() {
                                 id={`thread-${item.id}`}
                                 key={item.id}
                                 className={cn(
-                                    "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all relative hover:bg-muted/40",
+                                    "flex flex-col items-start gap-2 rounded-xl border p-4 text-left text-sm transition-all relative hover:bg-muted/40 active:bg-muted/60 sm:rounded-lg sm:p-3",
                                     item.isMuted && "opacity-70",
                                 )}
                                 onClick={() => {
@@ -59,7 +72,7 @@ export function ThreadList() {
                                 <div className="flex flex-col w-full gap-1">
                                     <div className="flex items-center">
                                         <div className="flex items-center gap-2">
-                                            <div className="font-semibold">
+                                            <div className="text-[15px] font-semibold sm:text-sm">
                                                 {item.emails.at(-1)?.from?.name}
                                             </div>
                                             {item.isStarred && (
@@ -82,10 +95,10 @@ export function ThreadList() {
                                             })}
                                         </div>
                                     </div>
-                                    <div className="text-xs font-medium">{item.subject}</div>
+                                    <div className="text-sm font-medium sm:text-xs">{item.subject}</div>
                                 </div>
                                 <div
-                                    className="text-xs line-clamp-2 text-muted-foreground"
+                                    className="line-clamp-2 text-[13px] text-muted-foreground sm:text-xs"
                                     dangerouslySetInnerHTML={{
                                         __html: DOMPurify.sanitize(item.emails.at(-1)?.bodySnippet ?? "", {
                                             USE_PROFILES: { html: true },
