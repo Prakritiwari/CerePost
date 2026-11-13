@@ -1,10 +1,6 @@
 # CerePost
 
 <p align="center">
-  <img src="./public/newapp-logo.png" alt="CerePost logo" width="120" />
-</p>
-
-<p align="center">
   <strong>Email rebuilt for speed, intelligence, and zero clutter.</strong><br />
   An AI-native email client with natural-language search, instant drafting, thread triage, and keyboard-first navigation.
 </p>
