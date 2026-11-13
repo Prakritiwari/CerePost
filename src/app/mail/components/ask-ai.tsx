@@ -6,7 +6,7 @@ import { useLocalStorage } from 'usehooks-ts';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
-import { LogoMark } from '@/components/logo';
+import { BrandLogo } from '@/components/brand-logo';
 import { toast } from 'sonner';
 
 interface Message {
@@ -177,9 +177,9 @@ const AskAI = ({ isCollapsed }: { isCollapsed: boolean }) => {
             <div className="flex flex-col border border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-900 p-3 shadow-sm">
                 <div className="flex items-center justify-between pb-2 border-b border-zinc-200 dark:border-zinc-800">
                     <div className="flex items-center gap-2">
-                        <LogoMark className="size-5" />
+                        <BrandLogo className="h-6" />
                         <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">
-                            CerePost AI
+                            AI assistant
                         </span>
                     </div>
                     {messages.length > 0 && (

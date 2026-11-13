@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
+import { SmoothScrollArea } from '@/components/smooth-scroll-area'
 import { cn } from '@/lib/utils'
 import { api } from '@/trpc/react'
 import { useDebounceValue, useLocalStorage } from 'usehooks-ts'
@@ -88,9 +89,10 @@ const SearchDisplay = () => {
         (!!query && data === undefined && !isError)
 
     return (
-        <div
+        <SmoothScrollArea
             data-search-results
-            className="h-full max-h-full overflow-y-auto p-4 pb-24 sm:h-auto sm:max-h-[calc(100vh-140px)] sm:pb-4"
+            className="h-full max-h-full sm:h-auto sm:max-h-[calc(100vh-140px)]"
+            contentClassName="p-4 pb-24 sm:pb-4"
         >
             <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
@@ -270,7 +272,7 @@ const SearchDisplay = () => {
                     Results combine keyword and semantic matching.
                 </div>
             )}
-        </div>
+        </SmoothScrollArea>
     )
 }
 

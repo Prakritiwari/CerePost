@@ -6,6 +6,7 @@ import { BellOff, Star } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
+import { SmoothScrollArea } from "@/components/smooth-scroll-area"
 import useThreads from "@/hooks/use-threads"
 import useVim from "./kbar/use-vim"
 import { useAutoAnimate } from "@formkit/auto-animate/react"
@@ -27,12 +28,12 @@ export function ThreadList({ mobile = false }: { mobile?: boolean }) {
     }, {} as Record<string, typeof threads>);
 
     return (
-        <div
+        <SmoothScrollArea
             className={cn(
                 "max-w-full",
                 mobile
-                    ? "h-full overflow-y-auto overscroll-contain"
-                    : "max-h-[calc(100vh-120px)] overflow-y-scroll",
+                    ? "h-full"
+                    : "max-h-[calc(100vh-120px)]",
             )}
         >
             <div
@@ -135,7 +136,7 @@ export function ThreadList({ mobile = false }: { mobile?: boolean }) {
                     </React.Fragment>
                 ))}
             </div>
-        </div>
+        </SmoothScrollArea>
     );
 }
 

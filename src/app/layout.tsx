@@ -21,11 +21,8 @@ export const metadata: Metadata = {
   applicationName: "CerePost",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://cerepost.app"),
   icons: {
-    icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/favicon.ico", sizes: "any" },
-    ],
-    apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
+    icon: [{ url: "/newapp-logo.png", type: "image/png", sizes: "773x772" }],
+    apple: [{ url: "/newapp-logo.png", sizes: "773x772" }],
   },
   openGraph: {
     title: "CerePost — AI Email Client",

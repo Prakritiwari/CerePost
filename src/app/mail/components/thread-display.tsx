@@ -49,7 +49,8 @@ import { api } from "@/trpc/react"
 import { addDays, addHours, format, nextSaturday } from "date-fns"
 import { cn } from "@/lib/utils"
 import EmailDisplay from "@/components/email-display"
-import { LogoMark } from "@/components/logo"
+import { BrandLogo } from "@/components/brand-logo"
+import { SmoothScrollArea } from "@/components/smooth-scroll-area"
 import { useThread } from "./use-thread"
 import useThreads from "@/hooks/use-threads"
 import { useLocalStorage } from "usehooks-ts"
@@ -497,13 +498,13 @@ export function ThreadDisplay({
                             )}
                         </div>
                         <Separator />
-                        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                        <SmoothScrollArea className="min-h-0 flex-1">
                             <div className="flex flex-col gap-4 p-4 sm:p-6">
                                 {thread.emails.map(email => {
                                     return <EmailDisplay key={email.id} email={email} />
                                 })}
                             </div>
-                        </div>
+                        </SmoothScrollArea>
                         <div data-reply-box className="shrink-0 border-t bg-background">
                             <ReplyBox
                                 replyDetails={replyDetails}
@@ -514,7 +515,7 @@ export function ThreadDisplay({
                 ) : (
                     <>
                         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-                            <LogoMark className="size-16 opacity-80" glow />
+                            <BrandLogo className="h-16 opacity-80" glow />
                             <div>
                                 <p className="text-sm font-semibold text-foreground">
                                     No message selected

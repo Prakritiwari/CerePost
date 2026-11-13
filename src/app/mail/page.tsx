@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { LogoMark } from "@/components/logo"
+import { BrandLogo } from "@/components/brand-logo"
 import type { ComponentProps } from "react"
 import type { Mail as MailType } from "./mail"
 
@@ -12,7 +12,7 @@ const Mail = dynamic<ComponentProps<typeof MailType>>(
         ssr: false,
         loading: () => (
             <div className="flex h-dvh w-full flex-col items-center justify-center gap-4 bg-background">
-                <LogoMark className="size-14 animate-pulse" glow />
+                <BrandLogo className="h-16 animate-pulse" glow priority />
                 <p className="text-[10px] font-medium uppercase tracking-[0.25em] text-muted-foreground">
                     Loading your inbox
                 </p>

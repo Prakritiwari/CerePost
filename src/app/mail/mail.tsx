@@ -36,7 +36,7 @@ import {
     SheetTitle,
 } from "@/components/ui/sheet"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { LogoMark } from "@/components/logo"
+import { BrandLogo } from "@/components/brand-logo"
 import { Menu, Sparkles } from "lucide-react"
 
 interface MailProps {
@@ -153,8 +153,7 @@ export function Mail({
                         >
                             <SheetHeader className="border-b px-4 py-3">
                                 <SheetTitle className="flex items-center gap-2">
-                                    <LogoMark className="size-6" />
-                                    CerePost
+                                    <BrandLogo className="h-7" />
                                     <span className="text-xs font-normal text-muted-foreground">
                                         Mail
                                     </span>
@@ -289,12 +288,7 @@ export function Mail({
                                 isCollapsed ? "justify-center" : "px-3"
                             )}
                         >
-                            <LogoMark className={isCollapsed ? "size-6" : "size-7"} />
-                            {!isCollapsed && (
-                                <span className="text-sm font-bold tracking-tight">
-                                    Cere<span className="text-violet-500">post</span>
-                                </span>
-                            )}
+                            <BrandLogo className={isCollapsed ? "h-6" : "h-7"} />
                         </div>
                         <div
                             className={cn(
